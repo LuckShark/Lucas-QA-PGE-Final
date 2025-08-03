@@ -1,0 +1,588 @@
+{
+	"info": {
+		"_postman_id": "2b439f58-e1ce-4cdb-b509-09b0a5eca90d",
+		"name": "API-LucasQA PGE",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "22027489",
+		"_collection_link": "https://www.postman.com/aerospace-observer-6742662/workspace/pge/collection/22027489-2b439f58-e1ce-4cdb-b509-09b0a5eca90d?action=share&source=collection_link&creator=22027489"
+	},
+	"item": [
+		{
+			"name": "Aquecimento",
+			"item": [
+				{
+					"name": "Ping server",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Servidor respondeu à chamada de aquecimento\", function() {\r",
+									"    pm.response.to.not.be.null;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Autenticação",
+			"item": [
+				{
+					"name": "Login com sucesso",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseData = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Status da resposta é 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Resposta contém a propriedade 'token'\", function () {\r",
+									"    pm.expect(responseData).to.have.property('token');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Token é uma string válida\", function () {\r",
+									"    pm.expect(responseData.token).to.be.a('string').and.to.have.lengthOf.at.least(10);\r",
+									"});\r",
+									"\r",
+									"if (responseData.token) {\r",
+									"    pm.environment.set(\"accessToken\", responseData.token);\r",
+									"    console.log(\"Token de acesso salvo no ambiente!\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"usuario\": \"{{usuario}}\",\r\n    \"senha\": \"{{senha}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login com senha inválida",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status da resposta é 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Corpo da resposta contém a mensagem de erro correta\", function () {\r",
+									"    pm.expect(pm.response.json()).to.have.property('erro', 'Usuário ou senha inválidos');\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"usuario\": \"{{usuario}}\",\r\n    \"senha\": \"senha-errada123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cadastro de Contribuintes",
+			"item": [
+				{
+					"name": "Cadastrar Novo Contribuinte",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status da resposta é 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Corpo da resposta contém a mensagem de sucesso\", function () {\r",
+									"    pm.expect(pm.response.json()).to.have.property('mensagem', 'Contribuinte cadastrado com sucesso');\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const randomCpf = Math.random().toString().slice(2, 13);\r",
+									"\r",
+									"pm.environment.set(\"cpfSempreNovo\", randomCpf);\r",
+									"\r",
+									"console.log(`CPF dinâmico gerado para esta execução: ${randomCpf}`);\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-access-token",
+								"value": "{{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"cpf\": \"{{cpfSempreNovo}}\",\r\n    \"nome\": \"Bruce Wayne\",\r\n    \"data_nascimento\": \"1972-02-19\",\r\n    \"nome_mae\": \"Martha Wayne\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/contribuintes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"contribuintes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cadastrar com CPF duplicado",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status da resposta é 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Corpo da resposta contém a mensagem de CPF duplicado\", function () {\r",
+									"    pm.expect(pm.response.json()).to.have.property('erro', 'CPF já cadastrado');\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-access-token",
+								"value": "{{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"cpf\": \"{{cpfExistente}}\",\r\n    \"nome\": \"Peter Parker\",\r\n    \"data_nascimento\": \"1999-08-15\",\r\n    \"nome_mae\": \"May Parker\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/contribuintes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"contribuintes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cadastrar com dados faltando",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status da resposta é 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Corpo da rseposta contém a mensagem de campos obrigatórios\", function () {\r",
+									"    pm.expect(pm.response.json()).to.have.property('erro', 'Todos os campos obrigatórios devem ser preenchidos');\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const randomCpf = Math.random().toString().slice(2, 13);\r",
+									"\r",
+									"pm.environment.set(\"cpfSempreNovo\", randomCpf);\r",
+									"\r",
+									"console.log(`CPF dinâmico gerado para esta execução: ${randomCpf}`);\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-access-token",
+								"value": "{{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"cpf\": \"{{cpfSempreNovo}}\",\r\n    \"nome\": \"Georege R. R. Martin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/contribuintes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"contribuintes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cadastrar sem Token de Acesso",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status da resposta é 403\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Corpo da resposta contém a mensagem de token não fornecido\", function () {\r",
+									"    pm.expect(pm.response.json()).to.have.property('erro', 'Token não fornecido');\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const randomCpf = Math.random().toString().slice(2, 13);\r",
+									"\r",
+									"pm.environment.set(\"cpfSempreNovo\", randomCpf);\r",
+									"\r",
+									"console.log(`CPF dinâmico gerado para esta execução: ${randomCpf}`);\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-access-token",
+								"value": "{{accessToken}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"cpf\": \"{{cpfSempreNovo}}\",\r\n    \"nome\": \"Bruce Wayne\",\r\n    \"data_nascimento\": \"1972-02-19\",\r\n    \"nome_mae\": \"Martha Wayne\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/contribuintes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"contribuintes"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Consulta de Inscrições",
+			"item": [
+				{
+					"name": "Consultar Inscrições (Válido)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {\r",
+									"   \r",
+									"    pm.test(\"Status da resposta é 200 (OK)\", function () {\r",
+									"        pm.response.to.have.status(200);\r",
+									"    });\r",
+									"\r",
+									"    const responseData = pm.response.json();\r",
+									"\r",
+									"    pm.test(\"Corpo da resposta é um array\", function() {\r",
+									"        pm.expect(responseData).to.be.an('array');\r",
+									"    });\r",
+									"\r",
+									"    if (responseData.length > 0) {\r",
+									"        pm.test(\"Itens da inscrição possuem as propriedades corretas\", function() {\r",
+									"            const inscricao = responseData[0];\r",
+									"\r",
+									"            pm.expect(inscricao).to.have.property('cpf');\r",
+									"            pm.expect(inscricao).to.have.property('numero');\r",
+									"            pm.expect(inscricao).to.have.property('descricao');\r",
+									"            pm.expect(inscricao).to.have.property('valor');\r",
+									"            pm.expect(inscricao).to.have.property('data_inscricao');\r",
+									"            pm.expect(inscricao).to.have.property('data_prazo');\r",
+									"        });\r",
+									"    }\r",
+									"\r",
+									"} else if (pm.response.code === 404) {\r",
+									"\r",
+									"    pm.test(\"Status da resposta é 404 (Not Found)\", function() {\r",
+									"        pm.response.to.have.status(404);\r",
+									"    });\r",
+									"    \r",
+									"    pm.test(\"Corpo da resposta contém a mensagem de erro correta\", function() {\r",
+									"        pm.expect(pm.response.json()).to.have.property('erro', 'Nenhuma inscrição encontrada para o CPF fornecido');\r",
+									"    });\r",
+									"\r",
+									"} else {\r",
+									"\r",
+									"    pm.test(\"Resposta com status de erro inesperado: \" + pm.response.code, function() {\r",
+									"        pm.expect.fail(\"Status inesperado: \" + pm.response.code);\r",
+									"    });\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-access-token",
+								"value": "{{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/inscricoes/{{cpfContribuinte}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inscricoes",
+								"{{cpfContribuinte}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Consultar Inscrições CPF Inexistente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status da resposta é 404\", function() {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Corpo da resposta contém a mensagem de 'não encontrado' correta\", function() {\r",
+									"    pm.expect(pm.response.json()).to.have.property('erro', 'Nenhuma inscrição encontrada para o CPF fornecido');\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"packages": {},
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-access-token",
+								"value": "{{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/inscricoes/999{{$randomInt}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inscricoes",
+								"999{{$randomInt}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Consultar Inscrições sem Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status da resposta é 403\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Corpo da resposta contém a mensagem de token não fornecido\", function () {\r",
+									"    pm.expect(pm.response.json()).to.have.property('erro', 'Token não fornecido');\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-access-token",
+								"value": "{{accessToken}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/inscricoes/{{cpfContribuinte}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inscricoes",
+								"{{cpfContribuinte}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
