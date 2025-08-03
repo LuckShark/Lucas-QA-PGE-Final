@@ -1,0 +1,42 @@
+name: CI - Testes Automatizados com Cypress
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Rodar testes Cypress
+        run: npx cypress run
+
+      - name: Notificar sucesso no Discord
+        if: success()
+        run: |
+          curl -H "Content-Type: application/json" \
+              -X POST \
+              -d '{"content": "✅ Pipeline *SUCESSO* no projeto QA PGE! Todos os Testes foram aprovados"}' \
+              ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Notificar falha no Discord
+        if: failure()
+        run: |
+          curl -H "Content-Type: application/json" \
+              -X POST \
+              -d '{"content": "❌ Pipeline *FALHOU* no projeto QA PGE. Verifique os testes Cypress no GitHub Actions."}' \
+              ${{ secrets.DISCORD_WEBHOOK }}
